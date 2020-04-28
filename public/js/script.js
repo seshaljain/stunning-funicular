@@ -1,40 +1,47 @@
-let shopItems = [{
-  "name": "Item One",
-  "image": "//placehold.it/300x200",
-  "price": "50",
-  "id": "0",
-  "quantity": "1"
-}, {
-  "name": "Item Two",
-  "image": "//placehold.it/300x200",
-  "price": "100",
-  "id": "1",
-  "quantity": "1"
-}, {
-  "name": "Item Three",
-  "image": "//placehold.it/300x200",
-  "price": "51",
-  "id": "2",
-  "quantity": "1"
-}, {
-  "name": "Item Four",
-  "image": "//placehold.it/300x200",
-  "price": "110",
-  "id": "3",
-  "quantity": "1"
-}, {
-  "name": "Item Five",
-  "image": "//placehold.it/300x200",
-  "price": "129",
-  "id": "4",
-  "quantity": "1"
-}, {
-  "name": "Item Six",
-  "image": "//placehold.it/300x200",
-  "price": "63",
-  "id": "5",
-  "quantity": "1"
-}];
+let shopItems = [
+  {
+    "name": "Item One",
+    "image": "//placehold.it/100",
+    "price": 50,
+    "id": 0,
+    "quantity": 0
+  },
+  {
+    "name": "Item Two",
+    "image": "//placehold.it/100",
+    "price": 100,
+    "id": 1,
+    "quantity": 0
+  },
+  {
+    "name": "Item Three",
+    "image": "//placehold.it/100",
+    "price": 51,
+    "id": 2,
+    "quantity": 0
+  },
+  {
+    "name": "Item Four",
+    "image": "//placehold.it/100",
+    "price": 110,
+    "id": 3,
+    "quantity": 0
+  },
+  {
+    "name": "Item Five",
+    "image": "//placehold.it/100",
+    "price": 129,
+    "id": 4,
+    "quantity": 0
+  },
+  {
+    "name": "Item Six",
+    "image": "//placehold.it/100",
+    "price": 63,
+    "id": 5,
+    "quantity": 0
+  }
+];
 
 let coupons = {
   "1ABC9C": "10",
@@ -45,167 +52,137 @@ let coupons = {
   "F1C40F": "12"
 };
 
-let appliedCouponValue = 0;
-
-let checkoutButton = document.querySelector('.checkout');
-checkoutButton.addEventListener('click', function() {
-  let couponInput = document.querySelector('.coupon').value;
-  let couponText = document.querySelector('.coupon-text');
-  if (!(couponInput in coupons)) {
-    couponText.classList.add('text-red-500');
-    couponText.innerHTML = `
-    <p>Sorry, incorrect coupon.</p>
-    `;
-  } else {
-    appliedCouponValue = parseInt(coupons[couponInput]);
-    checkoutTotal = checkoutTotal * (100 - appliedCouponValue)/100;
-    while (cartItems.length) {
-      cartItems.pop();
-    }
-    
-    let couponText = document.querySelector('.coupon-text');
-    couponText.classList.add('text-green-500');
-    couponText.innerHTML = `
-    <p>Yay! Coupon for ${appliedCouponValue}% applied!</p>
-    `;
-  }
-  couponText.classList.remove('hidden');
-  let checkoutValue = document.querySelector('.checkout-value');
-  checkoutValue.querySelector('.checkout-amount').innerText = checkoutTotal;
-  checkoutValue.classList.remove('hidden');
-})
-
-
-let cartItems = [];
-
-let checkoutTotal = 0;
+let cartTotal = 0;
 
 const renderShopItem = item => {
   return `
-<div class="w-1/2 md:w-1/4 bg-white rounded-lg shadow-md p-6 m-4" data-id="${item.id}">
-<img class="w-full object-cover object-center rounded" src="${item.image}" alt="${item.name}">
-<h3 class="mt-3 text-xl font-bold">${item.name} <span class="float-right">₹ ${item.price}</span></h3>
-<div class="mt-2 flex justify-center">
-<button
-class="add-item inline-block py-2 px-4 bg-blue-400 hover:bg-blue-500 rounded-sm text-white uppercase text-xs font-bold leading-tight">Add
-to Cart</button>
-</div>
-</div>
-`;
+  <div class="m-4 flex font-bold" data-id="${item.id}">
+    <div class="w-1/2 flex items-center justify-center sm:hidden">
+      <img src="${item.image}" class="w-32 rounded shadow-sm">
+    </div>
+    <div class="w-1/2 flex sm:w-full sm:flex-row flex-col sm:justify-center">
+      <div class="sm:w-1/2 flex flex-wrap items-center sm:justify-start">
+        <img src="${item.image}" class="hidden sm:block w-16 rounded shadow-sm">
+        <p class="self-center m-2 text-xl">${item.name}</p>
+      </div>
+      <div class="sm:w-1/4 font-bold flex items-center sm:justify-center text-center p-2">₹
+        <span>${item.price}</span></div>
+      <div class="sm:w-1/4 font-bold flex items-center sm:justify-center p-2">
+        <button class="w-8 bg-gray-500 hover:bg-gray-600 rounded-l text-gray-100 remove-item">-</button>
+        <span class="text-center w-8 item-quantity font-normal">${item.quantity}</span>
+        <button class="w-8 bg-gray-500 hover:bg-gray-600 rounded-r text-gray-100 add-item">+</button>
+      </div>
+    </div>
+  </div>
+  `;
 }
 
 const renderShop = () => {
-  const shopItemsContainer = document.querySelector('.shop-items');
+  const shop = document.querySelector('.shop-items');
   shopItems.forEach((item) => {
-      shopItemsContainer.innerHTML += renderShopItem(item);
+    shop.innerHTML += renderShopItem(item);
   });
 }
 
 renderShop();
 
-let shoppingCart = document.querySelector('.shopping-cart');
+let incButtons = Array.from(document.querySelectorAll('.add-item'));
+let decButtons = Array.from(document.querySelectorAll('.remove-item'));
 
-let addButtons = Array.from(document.querySelectorAll('.add-item'));
+const increaseQuantity = (e) => {
+  const button = e.target;
 
-
-const addCartItem = (e) => {
-  let button = e.target;
-  let shopItem = button.parentElement.parentElement;
+  let shopItem = button.parentElement.parentElement.parentElement;
   let itemID = shopItem.getAttribute('data-id');
-
-  for (let i = 0; i < cartItems.length; i++) {
-      if (cartItems[i].id === itemID) {
-          alert("Item already in cart.");
-          return;
-      }
-  }
-
+  
+  let itemQuantity = button.parentElement.querySelector('.item-quantity');
+  itemQuantity.innerHTML = +itemQuantity.innerHTML + 1;
+  
+  
   for (let i = 0; i < shopItems.length; i++) {
-      if (shopItems[i].id === itemID) {
-          cartItems.push(shopItems[i]);
-          break;
-      }
+    if (shopItems[i].id == itemID) {
+      shopItems[i].quantity += 1;
+      cartTotal += shopItems[i].price;
+    }
   }
   renderCart();
-  updateCartTotal();
+  renderTotal();
 }
 
-addButtons.forEach(btn => {
-  btn.addEventListener('click', addCartItem);
-})
-
-const updateCartItem = e => {
-  let quantity = e.value;
-
-  if (isNaN(quantity) || quantity < 1) {
-      alert('Minimum quantity is 1');
-      e.value = 1;
-  }
-
-  let cartRow = e.parentElement.parentElement;
-  let itemID = cartRow.getAttribute('data-id');
-  let itemTotal = cartRow.querySelector('.cart-item-total');
-  let itemPrice = cartRow.querySelector('.cart-item-price').innerText;
-  for (let i = 0; i < cartItems.length; i++) {
-      if (cartItems[i].id === itemID) {
-          cartItems[i].quantity = e.value;
+const decreaseQuantity = (e) => {
+  const button = e.target;
+  
+  let shopItem = button.parentElement.parentElement.parentElement;
+  let itemID = shopItem.getAttribute('data-id');
+  
+  let itemQuantity = button.parentElement.querySelector('.item-quantity');
+  
+  if (+itemQuantity.innerHTML > 0) {
+    itemQuantity.innerHTML = +itemQuantity.innerHTML - 1;
+    for (let i = 0; i < shopItems.length; i++) {
+      if (shopItems[i].id == itemID) {
+        shopItems[i].quantity -= 1;
+        cartTotal -= shopItems[i].price;
       }
+    }
+    renderCart();
+    renderTotal();
   }
-
-  itemTotal.innerText = parseInt(e.value) * parseInt(itemPrice);
-
-  updateCartTotal();
 }
 
+incButtons.forEach(btn => btn.addEventListener('click', increaseQuantity));
+decButtons.forEach(btn => btn.addEventListener('click', decreaseQuantity));
 
 const renderCartItem = (item) => {
   return `
-<tr class="cart-row" data-id="${item.id}">
-  <td class="px-4 py-2">${item.name}</td>
-  <td class="px-4 py-2 text-center cart-item-price">${item.price}</td>
-  <td class="px-4 py-2 w-1/4 text-center">
-    <input class="cart-item-quantity w-12 bg-gray-100 rounded px-2" type="number" value="${item.quantity}" onchange="updateCartItem(this)">
-  </td>
-  <td class="px-4 py-2 text-center">
-    <span class="cart-item-total">${item.price * item.quantity}</span>
-    <button
-      class="remove-item inline-block ml-2 py-1 px-2 bg-red-400 hover:bg-red-500 rounded-sm text-white uppercase text-xs font-bold leading-tight float-right" onclick="removeCartItem(this)">✕</button>
-  </td>
-</tr>
-`
+  <tr>
+    <td class="py-2"><span>${item.quantity}</span>✕${item.name}</td>
+    <td class="py-2 text-right">${item.quantity * item.price}</td>
+  </tr>
+  `;
 }
 
 const renderCart = () => {
-  let newCart = "";
-  cartItems.forEach(item => {
-      newCart += renderCartItem(item);
-  })
-  shoppingCart.innerHTML = newCart;
+  const cart = document.querySelector('.cart');
+  let cartItems = '';
+  shopItems.forEach(item => {
+    if (item.quantity > 0) {
+      cartItems += renderCartItem(item);
+    }
+  });
+  cart.innerHTML = cartItems;
 }
 
-const removeCartItem = (e) => {
-  let itemRow = e.parentElement.parentElement;
-  let itemID = itemRow.getAttribute('data-id');
-  itemRow.remove();
-  for (let i = 0; i < cartItems.length; i++) {
-      if (cartItems[i].id == itemID) {
-          cartItems[i].quantity = 1;
-          cartItems.splice(i, 1);
-          break;
-      }
+const renderTotal = () => {
+  document.querySelector('.cart-total').innerHTML = cartTotal;
+}
+
+let checkoutButton = document.querySelector('.checkout');
+
+checkoutButton.addEventListener('click', function() {
+  let appliedCouponValue = 0;
+  let checkoutTotal = cartTotal;
+  
+  let couponInput = document.querySelector('.coupon').value;
+  let couponText = '';
+
+  if (couponInput === '') {
+    couponText = `<p class="italic text-gray-500">No coupon applied</p>`;
+  } else if (!(couponInput in coupons)) {
+    couponText = `<p class="italic text-red-500">Sorry, incorrect coupon.</p>`;
   }
-  updateCartTotal();
-}
+  else {
+    appliedCouponValue = +coupons[couponInput];
+    checkoutTotal = checkoutTotal * (100 - appliedCouponValue) / 100;
+    couponText = `<p class="italic text-green-500">Yay! Coupon for ${appliedCouponValue}% applied.</p>`;
+  }
 
-const updateCartTotal = () => {
-  let total = 0;
-  const totalDOM = document.querySelector('.cart-total');
+  let checkoutSection = `
+  ${couponText}
+  <p class="text-lg">Cart Value: <span class="float-right font-bold cart-total">${checkoutTotal}</span></p>
+  <button class="block text-white bg-green-500 leading-tight text-sm p-4 mt-4 mx-auto rounded-full">Proceed to
+  Checkout</button>
+  `;
 
-  const cartRows = Array.from(document.querySelectorAll('.cart-row'));
-
-  cartRows.forEach(row => {
-      total += parseInt(row.querySelector('.cart-item-price').innerText) * row.querySelector('.cart-item-quantity').value;
-  })
-  checkoutTotal = total;
-  totalDOM.innerText = checkoutTotal;
-}
+  document.querySelector('.apply-coupon').innerHTML = checkoutSection;
+})
