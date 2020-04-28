@@ -94,11 +94,11 @@ const increaseQuantity = (e) => {
 
   let shopItem = button.parentElement.parentElement.parentElement;
   let itemID = shopItem.getAttribute('data-id');
-  
+
   let itemQuantity = button.parentElement.querySelector('.item-quantity');
   itemQuantity.innerHTML = +itemQuantity.innerHTML + 1;
-  
-  
+
+
   for (let i = 0; i < shopItems.length; i++) {
     if (shopItems[i].id == itemID) {
       shopItems[i].quantity += 1;
@@ -111,12 +111,12 @@ const increaseQuantity = (e) => {
 
 const decreaseQuantity = (e) => {
   const button = e.target;
-  
+
   let shopItem = button.parentElement.parentElement.parentElement;
   let itemID = shopItem.getAttribute('data-id');
-  
+
   let itemQuantity = button.parentElement.querySelector('.item-quantity');
-  
+
   if (+itemQuantity.innerHTML > 0) {
     itemQuantity.innerHTML = +itemQuantity.innerHTML - 1;
     for (let i = 0; i < shopItems.length; i++) {
@@ -136,8 +136,8 @@ decButtons.forEach(btn => btn.addEventListener('click', decreaseQuantity));
 const renderCartItem = (item) => {
   return `
   <tr>
-    <td class="py-2"><span>${item.quantity}</span>✕${item.name}</td>
-    <td class="py-2 text-right">${item.quantity * item.price}</td>
+  <td class="py-2"><span>${item.quantity}</span>✕${item.name}</td>
+  <td class="py-2 text-right">${item.quantity * item.price}</td>
   </tr>
   `;
 }
@@ -159,10 +159,14 @@ const renderTotal = () => {
 
 let checkoutButton = document.querySelector('.checkout');
 
-checkoutButton.addEventListener('click', function() {
+
+const applyCoupon = () => {
+  incButtons.forEach(btn => btn.removeEventListener('click', increaseQuantity));
+  decButtons.forEach(btn => btn.removeEventListener('click', decreaseQuantity));
+
   let appliedCouponValue = 0;
   let checkoutTotal = cartTotal;
-  
+
   let couponInput = document.querySelector('.coupon').value;
   let couponText = '';
 
@@ -185,4 +189,6 @@ checkoutButton.addEventListener('click', function() {
   `;
 
   document.querySelector('.apply-coupon').innerHTML = checkoutSection;
-})
+};
+
+checkoutButton.addEventListener('click', applyCoupon);
